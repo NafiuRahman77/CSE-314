@@ -49,15 +49,12 @@ echo "StudentID,Language,MatchedTests,FailedTests" > "$result_file"
 fi
 
 for subdirectory in "$source_folder"/*; do
-    if [[ $subdirectory =~ _assignsubmission_file_([0-9]{7})\.zip ]]; then
-        roll="${BASH_REMATCH[1]}"
-        #echo "Roll: $roll"
-        if $verbose; then
-            echo "Organizing file of $roll"
-        fi
-    else
-        echo "Unable to extract roll from folder name."
-        exit 1
+
+    base=$(basename "$subdirectory")
+    roll="${base:(-11):7}"
+    #echo "Roll: $roll"
+    if $verbose; then
+        echo "Organizing file of $roll"
     fi
 
     temp_dir=$(mktemp -d)
@@ -110,20 +107,22 @@ for subdirectory in "$source_folder"/*; do
         matched_tests=0
         failed_tests=0
 
+        if $verbose; then
+            echo "Executing file of $roll"
+        fi
+
         for test_file in "$test_folder"/*; do
             if [ -f "$test_file" ]; then
                 test_filename=$(basename "$test_file")
-                test_number="${test_filename#test}"
-                test_number="${test_number%.txt}"
+                test_number="${test_filename:(-5):1}"
+                
                 output_file="$roll_folder/out$test_number.txt"
 
                 # Create the output file
                 touch "$output_file"
 
                 # Run the code with the test case and store the output
-                if $verbose; then
-                    echo "Executing file of $roll"
-                fi
+                
                 if [ "$extension" = "c" ]; then
                     "$target_c_folder/$roll/main.out" < "$test_file" > "$output_file"
                 elif [ "$extension" = "java" ]; then
