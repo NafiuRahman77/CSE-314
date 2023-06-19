@@ -45,7 +45,19 @@ mkdir -p "$target_python_folder"
 
 if ! $noexecute; then
 result_file="$target_folder/result.csv"
-echo "StudentID,Language,MatchedTests,FailedTests" > "$result_file"
+echo "student_id,type,matched,not_matched" > "$result_file"
+fi
+
+count=0
+
+for test_file in "$test_folder"/*; do
+    if [ -f "$test_file" ]; then
+      ((count++))             
+    fi
+done
+
+if $verbose; then
+    echo "Found $count test files "
 fi
 
 for subdirectory in "$source_folder"/*; do
@@ -54,7 +66,7 @@ for subdirectory in "$source_folder"/*; do
     roll="${base:(-11):7}"
     #echo "Roll: $roll"
     if $verbose; then
-        echo "Organizing file of $roll"
+        echo "Organizing files of $roll"
     fi
 
     temp_dir=$(mktemp -d)
@@ -63,30 +75,30 @@ for subdirectory in "$source_folder"/*; do
     code_file=$(find "$temp_dir" -type f \( -name "*.c" -o -name "*.java" -o -name "*.py" \))
 
     if [[ $code_file == *.c ]]; then
-        language="c"
+        language="C"
         extension="c"
     elif [[ $code_file == *.java ]]; then
-        language="java"
+        language="Java"
         extension="java"
     elif [[ $code_file == *.py ]]; then
-        language="python"
+        language="Python"
         extension="py"
     else
         language="unknown"
         extension=""
     fi
 
-    if [[ $language == "c" ]]; then
+    if [[ $language == "C" ]]; then
         new_file="main.c"
         roll_folder="$target_c_folder/$roll"
         mkdir -p "$target_c_folder/$roll"
         mv "$code_file" "$target_c_folder/$roll/$new_file"
-    elif [[ $language == "java" ]]; then
+    elif [[ $language == "Java" ]]; then
         new_file="main.java"
         roll_folder="$target_java_folder/$roll"
         mkdir -p "$target_java_folder/$roll"
         mv "$code_file" "$target_java_folder/$roll/$new_file"
-    elif [[ $language == "python" ]]; then
+    elif [[ $language == "Python" ]]; then
         new_file="main.py"
         roll_folder="$target_python_folder/$roll"
         mkdir -p "$target_python_folder/$roll"
@@ -98,9 +110,9 @@ for subdirectory in "$source_folder"/*; do
 
 
     if ! $noexecute; then
-        if [ "$language" = "c" ]; then
+        if [ "$language" = "C" ]; then
             gcc "$target_c_folder/$roll/$new_file" -o "$target_c_folder/$roll/main.out"
-        elif [ "$language" = "java" ]; then
+        elif [ "$language" = "Java" ]; then
             javac "$target_java_folder/$roll/$new_file" -d "$target_java_folder/$roll/"
         fi
 
@@ -108,7 +120,7 @@ for subdirectory in "$source_folder"/*; do
         failed_tests=0
 
         if $verbose; then
-            echo "Executing file of $roll"
+            echo "Executing files of $roll"
         fi
 
         for test_file in "$test_folder"/*; do
