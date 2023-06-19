@@ -2,7 +2,10 @@
 
 # Check if the required arguments are provided
 if [ "$#" -lt 4 ]; then
-    echo "Usage: $0 <submissions_folder> <targets_folder> <tests_folder> <answers_folder> [-v] [-noexecute]"
+    echo "Usage:"
+    echo "$0 <submissions_folder> <targets_folder> <tests_folder> <answers_folder> [-v] [-noexecute]"
+    echo "-v: verbose"
+    echo "-noexecute: do not execute code files"
     exit 1 
 fi
 
@@ -11,6 +14,11 @@ source_folder="$1"
 target_folder="$2"
 test_folder="$3"
 answer_folder="$4"
+
+if [ -d "$target_folder" ]; then
+    rm -rf "$target_folder"
+fi
+
 
 mkdir -p "$target_folder"
 
