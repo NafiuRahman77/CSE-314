@@ -97,7 +97,7 @@ index d021857..283a3f0 100644
    // wait_lock must be held when using this:
    struct proc *parent;         // Parent process
 diff --git a/kernel/syscall.c b/kernel/syscall.c
-index ed65409..2c30c82 100644
+index ed65409..baf7ae9 100644
 --- a/kernel/syscall.c
 +++ b/kernel/syscall.c
 @@ -6,6 +6,7 @@
@@ -186,7 +186,7 @@ index ed65409..2c30c82 100644
  };
  
  void
-@@ -138,10 +203,46 @@ syscall(void)
+@@ -138,10 +203,119 @@ syscall(void)
    if(num > 0 && num < NELEM(syscalls) && syscalls[num]) {
      // Use num to lookup the system call function for num, call it,
      // and store its return value in p->trapframe->a0
@@ -197,26 +197,99 @@ index ed65409..2c30c82 100644
 +    
 +    // Check trace_id of process and print trace if the trace_id matches the current system call
 +    if (p->traceid == num) {
++      if(num==1||num==11||num==14){
++      printf("pid: %d, syscall: %s, args: (", p->pid, syscall_names[p->traceid]);
++      uint64 rt = syscalls[num]();
++      p->trapframe->a0 = rt;
++      printf("), return: %d\n", rt);
++      }
++      if(num==2||num==6||num==10||num==12||num==13||num==21||num==22||num==23){
++      int arg0 ;
++      argint(0,&arg0);
++      printf("pid: %d, syscall: %s, args: (%d", p->pid, syscall_names[p->traceid],arg0);
++      uint64 rt = syscalls[num]();
++      p->trapframe->a0 = rt;
++      printf("), return: %d\n", rt);
++      }
++      if(num==3||num==4){
++      uint64 arg0 ;
++      argaddr(0,&arg0);
++      printf("pid: %d, syscall: %s, args: (%p", p->pid, syscall_names[p->traceid],arg0);
++      uint64 rt = syscalls[num]();
++      p->trapframe->a0 = rt;
++      printf("), return: %d\n", rt);
++      }
++      if(num==5||num==16){  
++      int arg0;
++      argint(0,&arg0);
++      uint64 arg1 ;
++      argaddr(1,&arg1);
++      int arg2;
++      argint(2,&arg2);
++      printf("pid: %d, syscall: %s, args: (%d, %p, %d", p->pid, syscall_names[p->traceid],arg0, arg1, arg2);
++      uint64 rt = syscalls[num]();
++      p->trapframe->a0 = rt;
++      printf("), return: %d\n", rt);
++      }
 +      if(num==7){
 +      char arg0[300];
 +      argstr(0,arg0,300);
 +      uint64 arg1 ;
 +      argaddr(1,&arg1);
-+      printf("pid: %d, syscall: %s, args: %s , %p ", p->pid, syscall_names[p->traceid],arg0, arg1);
++      printf("pid: %d, syscall: %s, args: (%s, %p", p->pid, syscall_names[p->traceid],arg0, arg1);
 +      uint64 rt = syscalls[num]();
 +      p->trapframe->a0 = rt;
-+      printf("return: %d\n", rt);
++      printf("),return: %d\n", rt);
 +      }
-+
++      if(num==8){
++      int arg0;
++      argint(0,&arg0);
++      uint64 arg1 ;
++      argaddr(1,&arg1);    
++      printf("pid: %d, syscall: %s, args: (%d, %p", p->pid, syscall_names[p->traceid],arg0, arg1);
++      uint64 rt = syscalls[num]();
++      p->trapframe->a0 = rt;
++      printf("), return: %d\n", rt);
++      }
++      if(num==9||num==18||num==20){
++      char arg0[300];
++      argstr(0,arg0,300);
++      printf("pid: %d, syscall: %s, args: (%s", p->pid, syscall_names[p->traceid],arg0);
++      uint64 rt = syscalls[num]();
++      p->trapframe->a0 = rt;
++      printf("), return: %d\n", rt);
++      }
 +      if(num==15){
 +      char arg0[300];
 +      argstr(0,arg0,300);
 +      int arg1 ;
 +      argint(1,&arg1);
-+      printf("pid: %d, syscall: %s, args: %s , %d ", p->pid, syscall_names[p->traceid],arg0, arg1);
++      printf("pid: %d, syscall: %s, args: (%s , %d", p->pid, syscall_names[p->traceid],arg0, arg1);
 +      uint64 rt = syscalls[num]();
 +      p->trapframe->a0 = rt;
-+      printf("return: %d\n", rt);
++      printf("),return: %d\n", rt);
++      }
++      if(num==17){ 
++      char arg0[300];
++      argstr(0,arg0,300);
++      int arg1;
++      argint(1,&arg1);
++      int arg2;
++      argint(2,&arg2);
++      printf("pid: %d, syscall: %s, args: (%s, %d, %d", p->pid, syscall_names[p->traceid],arg0, arg1, arg2);
++      uint64 rt = syscalls[num]();
++      p->trapframe->a0 = rt;
++      printf("), return: %d\n", rt);
++      }
++      if(num==19){ 
++      char arg0[300];
++      argstr(0,arg0,300);
++      char arg1[300];
++      argstr(1,arg1,300);
++      printf("pid: %d, syscall: %s, args: (%s, %s", p->pid, syscall_names[p->traceid],arg0, arg1);
++      uint64 rt = syscalls[num]();
++      p->trapframe->a0 = rt;
++      printf("), return: %d\n", rt);
 +      }
 +      
 +    }
