@@ -1,3 +1,15 @@
+diff --git a/.vscode/settings.json b/.vscode/settings.json
+new file mode 100644
+index 0000000..96de352
+--- /dev/null
++++ b/.vscode/settings.json
+@@ -0,0 +1,5 @@
++{
++    "files.associations": {
++        "spinlock.h": "c"
++    }
++}
+\ No newline at end of file
 diff --git a/Makefile b/Makefile
 index 39a99d7..b3663db 100644
 --- a/Makefile
@@ -12,7 +24,7 @@ index 39a99d7..b3663db 100644
  fs.img: mkfs/mkfs README $(UPROGS)
  	mkfs/mkfs fs.img README $(UPROGS)
 diff --git a/kernel/defs.h b/kernel/defs.h
-index a3c962b..bd95520 100644
+index a3c962b..46be322 100644
 --- a/kernel/defs.h
 +++ b/kernel/defs.h
 @@ -63,6 +63,7 @@ void            ramdiskrw(struct buf*);
@@ -23,22 +35,41 @@ index a3c962b..bd95520 100644
  
  // log.c
  void            initlog(int, struct superblock*);
-@@ -187,3 +188,6 @@ void            virtio_disk_intr(void);
+@@ -140,6 +141,7 @@ void            argaddr(int, uint64 *);
+ int             fetchstr(uint64, char*, int);
+ int             fetchaddr(uint64, uint64*);
+ void            syscall();
++void            initializeLock(void);
+ 
+ // trap.c
+ extern uint     ticks;
+@@ -187,3 +189,6 @@ void            virtio_disk_intr(void);
  
  // number of elements in fixed-size array
  #define NELEM(x) (sizeof(x)/sizeof((x)[0]))
 +
 +//proc.c
 +int             trace(int);
-diff --git a/kernel/kalloc.c b/kernel/kalloc.c
-index 0699e7e..55ea25a 100644
---- a/kernel/kalloc.c
-+++ b/kernel/kalloc.c
-@@ -80,3 +80,4 @@ kalloc(void)
-     memset((char*)r, 5, PGSIZE); // fill with junk
-   return (void*)r;
- }
+diff --git a/kernel/main.c b/kernel/main.c
+index f0d3171..3f47572 100644
+--- a/kernel/main.c
++++ b/kernel/main.c
+@@ -4,6 +4,7 @@
+ #include "riscv.h"
+ #include "defs.h"
+ 
 +
+ volatile static int started = 0;
+ 
+ // start() jumps here in supervisor mode on all CPUs.
+@@ -11,6 +12,7 @@ void
+ main()
+ {
+   if(cpuid() == 0){
++    initializeLock();
+     consoleinit();
+     printfinit();
+     printf("\n");
 diff --git a/kernel/proc.c b/kernel/proc.c
 index 959b778..d537220 100644
 --- a/kernel/proc.c
@@ -84,7 +115,7 @@ index d021857..283a3f0 100644
    // wait_lock must be held when using this:
    struct proc *parent;         // Parent process
 diff --git a/kernel/syscall.c b/kernel/syscall.c
-index ed65409..baf7ae9 100644
+index ed65409..fd897c0 100644
 --- a/kernel/syscall.c
 +++ b/kernel/syscall.c
 @@ -6,6 +6,7 @@
@@ -104,14 +135,14 @@ index ed65409..baf7ae9 100644
  
  // An array mapping syscall numbers from syscall.h
  // to the function that handles the system call.
-@@ -126,6 +129,68 @@ static uint64 (*syscalls[])(void) = {
+@@ -126,8 +129,79 @@ static uint64 (*syscalls[])(void) = {
  [SYS_link]    sys_link,
  [SYS_mkdir]   sys_mkdir,
  [SYS_close]   sys_close,
 +[SYS_trace]   sys_trace,
 +[SYS_history] sys_history,
-+};
-+
+ };
+ 
 +static char* syscall_names[] = {
 +[SYS_fork]    "fork",
 +[SYS_exit]    "exit",
@@ -170,10 +201,21 @@ index ed65409..baf7ae9 100644
 +[SYS_close].syscall_name=   "close",
 +[SYS_trace].syscall_name=   "trace",
 +[SYS_history].syscall_name= "history",
- };
- 
++};
++
++
++struct spinlock locks[25];
++
++void initializeLock(){
++  for(int i=1;i<=23;i++){
++    initlock(&locks[i],syscall_names[i]);
++  }
++}
++
  void
-@@ -138,10 +203,119 @@ syscall(void)
+ syscall(void)
+ {
+@@ -138,10 +212,121 @@ syscall(void)
    if(num > 0 && num < NELEM(syscalls) && syscalls[num]) {
      // Use num to lookup the system call function for num, call it,
      // and store its return value in p->trapframe->a0
@@ -287,8 +329,10 @@ index ed65409..baf7ae9 100644
 +    acquire(&tickslock);
 +    int ticks_end = ticks;
 +    release(&tickslock);
++    acquire(&locks[num]);
 +    syscall_history[num].count++;
 +    syscall_history[num].accum_time += (ticks_end-ticks_start);
++    release(&locks[num]);
    } else {
 -    printf("%d %s: unknown sys call %d\n",
 -            p->pid, p->name, num);
@@ -308,16 +352,17 @@ index bc5f356..feb9a19 100644
 +#define SYS_history 23
 diff --git a/kernel/syscall_stat.h b/kernel/syscall_stat.h
 new file mode 100644
-index 0000000..2475acc
+index 0000000..80b60f8
 --- /dev/null
 +++ b/kernel/syscall_stat.h
-@@ -0,0 +1,5 @@
+@@ -0,0 +1,7 @@
++
 +struct syscall_stat {
 +    char syscall_name[16];
 +    int count;
 +    int accum_time;
 +};
-\ No newline at end of file
++
 diff --git a/kernel/sysproc.c b/kernel/sysproc.c
 index 1de184e..f47c075 100644
 --- a/kernel/sysproc.c
@@ -357,10 +402,10 @@ index 1de184e..f47c075 100644
 +
 diff --git a/user/history.c b/user/history.c
 new file mode 100644
-index 0000000..bd6646d
+index 0000000..f60b956
 --- /dev/null
 +++ b/user/history.c
-@@ -0,0 +1,24 @@
+@@ -0,0 +1,29 @@
 +#include "kernel/param.h"
 +#include "kernel/types.h"
 +#include "kernel/stat.h"
@@ -374,15 +419,20 @@ index 0000000..bd6646d
 +        for (int num = 1; num <= 23; num++)
 +        {
 +            history(num, (void *)&s);
-+            printf("%s %d %d\n", s.syscall_name, s.count, s.accum_time);
++            printf("%d:\tsyscall: %s, #: %d, time: %d\n",num,s.syscall_name, s.count, s.accum_time);
 +        }
 +        exit(0);
 +    }
 +
 +    int num = atoi(argv[1]);
++    if (num < 1 || num > 23)
++    {
++        printf("Error: Argument must be an integer between 1 and 23.\n");
++        exit(1);
++    }
 +    struct syscall_stat s;
 +    history(num, (void *)&s);
-+    printf("%s %d %d\n", s.syscall_name, s.count, s.accum_time);
++    printf("%d:\tsyscall: %s, #: %d, time: %d\n",num,s.syscall_name, s.count, s.accum_time);
 +    exit(0);
 +}
 diff --git a/user/trace.c b/user/trace.c
