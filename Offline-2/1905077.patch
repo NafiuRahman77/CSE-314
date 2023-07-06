@@ -31,27 +31,14 @@ index a3c962b..bd95520 100644
 +//proc.c
 +int             trace(int);
 diff --git a/kernel/kalloc.c b/kernel/kalloc.c
-index 0699e7e..e1e2c56 100644
+index 0699e7e..55ea25a 100644
 --- a/kernel/kalloc.c
 +++ b/kernel/kalloc.c
-@@ -80,3 +80,16 @@ kalloc(void)
+@@ -80,3 +80,4 @@ kalloc(void)
      memset((char*)r, 5, PGSIZE); // fill with junk
    return (void*)r;
  }
 +
-+// Returns the amount of free memory
-+int
-+get_available_free_memory(void)
-+{
-+  struct run *r;
-+  int mem = 0;
-+  acquire(&kmem.lock);
-+  for(r = kmem.freelist; r ; r=r->next)
-+    mem+=PGSIZE;
-+  release(&kmem.lock);
-+  return mem;
-+}
-\ No newline at end of file
 diff --git a/kernel/proc.c b/kernel/proc.c
 index 959b778..d537220 100644
 --- a/kernel/proc.c
