@@ -26,9 +26,6 @@ public:
     
     static void initStudentClass(int w,int x, int y);
     Student(int s_id);
-    int leftIndex(int id);
-    int rightIndex(int id);
-    void test(int id);
     void setGroup(Group* g);
     static void* student_phase_wrapper(void* arg) ;
     void start_thread();

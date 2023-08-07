@@ -35,21 +35,7 @@ Student::Student(int s_id){
     }
 
 
-int Student::leftIndex(int id){
-    return (id+NUM_PRINT_STATIONS-1)%NUM_PRINT_STATIONS;
-}
-int Student::rightIndex(int id){
-    return (id+1)%NUM_PRINT_STATIONS;
-}
 
-void Student::test(int id){
-        int left=leftIndex(id);
-        int right=rightIndex(id);
-        if(printer_state[id]==PRE_PRINTING && printer_state[left]!=PRINTING && printer_state[right]!=PRINTING){
-            printer_state[id]=PRINTING;
-            //sem_post(&printer_sems[id]);
-        }
-}
 void Student::setGroup(Group* g){
     group=g;
 }
@@ -66,7 +52,6 @@ void Student::start_thread(){
 void* Student::student_phase(void* arg){
         sleep(Clock::student_random_delay());
         int assigned_print_station=id%4;
-        std::osyncstream(std::cout) << "Student " << id << " has arrived at printing station at time "  <<Clock::get_seconds()<< std::endl;
 
         pthread_mutex_lock(&printer_locks[assigned_print_station]);
         if(printer_state[assigned_print_station]==FREE){
@@ -81,10 +66,12 @@ void* Student::student_phase(void* arg){
             sem_wait(&wait_semaphore);
         }
 
-        //eat
+        // eat
+        pthread_mutex_lock(&printer_locks[assigned_print_station]);
+        std::osyncstream(std::cout) << "Student " << id << " has arrived at printing station " << assigned_print_station << " at time " << Clock::get_seconds() << std::endl;
+        std::osyncstream(std::cout) << "Student " << id << " is printing at printing station " << assigned_print_station << std::endl;
         sleep(print_delay);
-        
-        std::osyncstream(std::cout) << "Student " << id << " has finished printing at time "  <<Clock::get_seconds()<< std::endl;
+        pthread_mutex_unlock(&printer_locks[assigned_print_station]);
        
         pthread_mutex_lock(&printer_locks[assigned_print_station]);
         printer_state[assigned_print_station]=FREE;
