@@ -1,54 +1,106 @@
-# CSE-314 Operating System Sessional Course
+# **CSE-314 Operating System Sessional**
 
-Welcome to the repository for the CSE-314 Operating System Sessional Course. This repository contains code and resources related to various topics covered in the course.
+This repository contains implementations of assignments from the Operating System course offered in the Department of Computer Science and Engineering at Bangladesh University of Engineering and Technology (BUET).
 
-## Contents
+---
 
-- [Shell Bash Script](#shell-bash-script)
-- [xv6 System Calls](#xv6-system-calls)
-- [xv6 Scheduling](#xv6-scheduling)
-- [Inter Process Communication](#inter-process-communication)
-- [xv6 Threading](#xv6-threading)
-- [xv6 Memory Management](#xv6-memory-management)
+## **Assignments**
 
-## Shell Bash Script
+### **Shell Script**
 
-This section contains examples and explanations related to shell scripting using Bash. The scripts cover various aspects of automating tasks in a Unix-like environment.
+**Offline 1**
+- [Problem Statement](/Offline-1/CSE%20314%20Jan%202023%20-%20Shell%20Scripting%20Assignment.pdf)
+- [Solution](/Offline-1)
 
-## xv6 System Calls
+**Online-1**
+- [Problem Statement](/Online%-1/b1%20online.pdf)
+- [Solution](/Online-1/1905077.sh)
 
-Here, you will find information about xv6 operating system and its system calls. We have provided code examples and explanations for a better understanding of how system calls work in xv6.
+### **Xv6 System Call**
 
-## xv6 Scheduling
+**Offline 2**
+- [Problem Statement](/Offline-2/Offline-2-spec.pdf)
+- [Solution](/Offline-2/1905077.patch/)
 
-In this section, we explore the scheduling algorithms used in the xv6 operating system. Code snippets and explanations are provided to demonstrate how these algorithms affect process execution.
+  **How to Apply Patch:**
+  1. Place the `1905077.patch` file in the root directory of the xv6 source code.
+  2. Apply the patch using the following command:
+     ```bash
+     git apply 1905077.patch
+     ```
+  3. Rebuild the xv6 system:
+     ```bash
+     make clean && make
+     ```
+  4. Run xv6 in QEMU:
+     ```bash
+     make qemu
+     ```
 
-## Inter Process Communication
+### **Xv6 Lottery Scheduling**
 
-Learn about inter-process communication using pthreads, semaphores, and mutexes. The code examples and explanations will help you understand how to synchronize and communicate between different processes effectively.
+**Offline 3**
+- [Problem Statement](/Offline-3/_CSE-314--assignment-03.pdf)
+- [Solution](/Offline-3/1905077.patch/)
 
-## xv6 Threading
+  **How to Apply Patch:**
+  1. Place the `1905077.patch` file in the root directory of the xv6 source code.
+  2. Apply the patch:
+     ```bash
+     git apply 1905077.patch
+     ```
+  3. Rebuild the xv6 system:
+     ```bash
+     make clean && make
+     ```
+  4. Run xv6 in QEMU:
+     ```bash
+     make qemu
+     ```
 
-Explore threading concepts in the xv6 operating system. This section covers the basics of multithreading, thread creation, synchronization, and coordination in a multi-threaded environment.
+### **Inter-Process Communication**
 
-## xv6 Memory Management
+**Offline 4**
+- [Problem Statement](/Offline-4/IPC%20Offline.pdf)
+- [Solution](/Offline-4/)
 
-Understand how memory is managed in the xv6 operating system. This section explains the memory layout, allocation, and deallocation mechanisms used in xv6.
+  **How to Run:**
+  - Compile `main.cpp` along with all other `.hpp` and `.cpp` files in the same directory.
+  - Example:
+    ```bash
+    g++ main.cpp file1.cpp file2.cpp -o offline4
+    ./offline4
+    ```
 
-## How to Use
+**Online-3**
+- [Solution](/Online-3/online.cpp)
 
-Each section of this repository contains its own set of code examples, explanations, and resources. Feel free to navigate to the specific sections you're interested in and explore the content provided.
+  **How to Run:**
+  - Compile `online.cpp` using g++:
+    ```bash
+    g++ online.cpp -o online3
+    ./online3
+    ```
 
-## Contribution
+### **Xv6 Threading and Synchronization**
 
-Contributions to this repository are welcome! If you find any issues or want to add more content, feel free to fork this repository, make your changes, and create a pull request. Please ensure your contributions are relevant to the topics covered in the course.
+**Offline 5**
+- [Problem Statement](/Offline-5/threading_specification.md)
+- [Solution](/Offlline-5/1905077.patch/)
 
-## License
+  **How to Apply Patch:**
+  1. Place the `1905077.patch` file in the root directory of the xv6 source code.
+  2. Apply the patch:
+     ```bash
+     git apply 1905077.patch
+     ```
+  3. Rebuild the xv6 system:
+     ```bash
+     make clean && make
+     ```
+  4. Run xv6 in QEMU:
+     ```bash
+     make qemu
+     ```
 
-This repository is licensed under the [MIT License](LICENSE). You are free to use the code and resources for educational and non-commercial purposes.
-
-## Contact
-
-If you have any questions or need further assistance, you can contact [Your Name] at [your.email@example.com].
-
-Happy learning!
+---
